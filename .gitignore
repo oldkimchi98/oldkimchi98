@@ -1,0 +1,10 @@
+downloads/
+.ipynb_checkpoints/
+lecNote/
+__pycache__/
+.vscode/
+.venv/
+.vs/
+IDE/
+팀플1/
+.env
