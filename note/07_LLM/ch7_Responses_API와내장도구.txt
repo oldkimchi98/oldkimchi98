@@ -1,0 +1,57 @@
+﻿7장  Responses API와 내장 도구
+
+
+핵심 이해
+
+Responses → input과 instructions를 전달하고 output 항목을 반환하는 API.
+response.output_text → 응답의 텍스트 내용을 간편하게 추출하는 속성.
+도구 사용 가능 여부는 선택한 모델과 API 지원 범위에 따라 달라진다.
+
+
+전체 흐름
+
+OpenAI() → responses.create() → response.id·output_text 확인 → 다음 요청의 previous_response_id에 연결.
+instructions → 이번 요청의 역할·지침. input → 질문 또는 입력 항목.
+usage.input_tokens·output_tokens → 입력·출력 사용량.
+
+
+대화 이어가기
+
+첫 요청 → previous_id=None. 성공한 요청 → previous_id=response.id로 갱신.
+다음 요청 → previous_response_id=previous_id와 새 input 전달.
+이전 응답 ID를 사용해도 과거 입력 문맥의 토큰이 무료가 되는 것은 아니다.
+이전 응답의 instructions는 자동으로 이어지지 않으므로 필요한 지침은 매 요청에 다시 전달한다.
+로컬 history → 표시·백업용 대화 기록. previous_response_id → API의 응답 연결. 두 역할을 구분한다.
+예외 발생 시 ID를 성공한 응답으로 유지하고 재시도·다음 입력 흐름을 정한다.
+서버의 응답 저장 정책은 별도 확인하며 ID 하나로 영구 저장을 보장한다고 이해하지 않는다.
+
+
+Code Interpreter
+
+files.create() → 파일을 업로드하고 file_id를 얻는다.
+tools의 type='code_interpreter' → 실행 도구 연결.
+container={'type':'auto','file_ids':[file_id]} → 도구 실행 환경에서 파일 사용.
+코드 작성 설명과 실제 도구 실행 결과를 구분한다. response.output의 호출 항목도 확인한다.
+컨테이너는 영구 실행 환경이 아니므로 필요한 결과 파일을 보존한다. 수명·지원 모델은 공식 문서를 확인한다.
+
+
+File Search
+
+vector_stores.create() → 검색 저장소 생성.
+vector_stores.files.upload_and_poll() → 문서를 넣고 처리 완료 대기.
+tools의 type='file_search', vector_store_ids=[id] → 관련 문서를 검색해 답변.
+파일을 계산·가공하는 Code Interpreter와 문서의 근거를 찾는 File Search를 구분한다.
+문서에 없는 질문에는 근거를 찾지 못했다고 답하도록 지시한다. 문서 외 사실을 임의로 채우지 않는다.
+같은 폴더의 예제 글은 AI 응용 분야에 관한 내용이므로 무관한 공연 질문의 근거는 없다.
+
+
+모델과 필수 함수
+
+원문에는 gpt-4.1-nano와 gpt-4o-mini가 등장한다. 같은 모델이 모든 내장 도구를 지원한다고 가정하지 않는다.
+gpt-4.1-nano는 공식 문서에 2026-10-23 종료 예정으로 안내되어 있다. 이후 실행할 때 대체 모델과 옵션을 확인한다.
+responses.create(), files.create(), vector_stores.create(), upload_and_poll() → 응답·업로드·검색 준비.
+response.id, previous_response_id, output_text → 대화 연결과 답변 추출.
+
+원문 → ch7_Responses_API.ipynb.
+공식 확인 → https://developers.openai.com/api/docs/guides/migrate-to-responses
+모델 일정 → https://developers.openai.com/api/docs/deprecations

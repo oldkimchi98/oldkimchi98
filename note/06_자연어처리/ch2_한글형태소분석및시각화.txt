@@ -11,15 +11,15 @@
 전체 흐름
 
 원문 수집 → 형태소와 품사 분석 → 명사 선택 → 불용어 제거 → 빈도 계산 → 워드클라우드와 등장 위치 확인 → Word2Vec 학습과 유사도 분석.
-수업 자료 → 영어 Emma 말뭉치, 한국어 헌법 말뭉치, 네이버 경제뉴스의 제목과 요약.
+분석 자료 → 영어 Emma 말뭉치, 한국어 헌법 말뭉치, 네이버 경제뉴스의 제목과 요약.
 
 
 한글 분석기
 
-Hannanum → morphs(), nouns(), pos(), analyze()로 분석. 수업은 ntags=22에서 NC 등의 명사를 선택한다.
+Hannanum → morphs(), nouns(), pos(), analyze()로 분석. 예제에서는 ntags=22에서 NC 등의 명사를 선택한다.
 Kkma와 Komoran → NNG 일반명사, NNP 고유명사 등을 선택한다.
 Okt → Noun 태그로 명사를 선택. phrases()로 명사구도 추출한다.
-MeCab → 수업에서는 from mecab import MeCab로 사용. NNG, NNP 등의 태그를 선택한다.
+MeCab → 예제에서는 from mecab import MeCab로 사용. NNG, NNP 등의 태그를 선택한다.
 morphs() → 형태소 목록. nouns() → 명사 목록. pos() → (형태소, 품사) 목록.
 분석기의 태그 이름이 다르므로 다른 분석기의 필터를 그대로 적용하지 않는다.
 

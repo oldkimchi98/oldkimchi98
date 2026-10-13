@@ -1,0 +1,47 @@
+﻿2장 실습  나라 → 대표 음식 → 레시피 체인
+
+
+핵심 이해
+
+첫 체인의 출력이 다음 체인의 입력이 되는 생성형 AI 실습이다.
+음식명만 받도록 출력 조건을 좁히고, 그 결과를 레시피 질문의 food 변수로 전달한다.
+모델이 만든 대표 음식은 단일 정답이 아닐 수 있으며 음식명·조리법의 정확도를 별도로 확인한다.
+
+
+전체 흐름
+
+나라 입력 → food_prompt → LLM → 문자열 음식명 → recipe_prompt → LLM → 문자열 레시피.
+food_chain → 입력 변수 country. recipe_chain → 입력 변수 food.
+
+
+체인 구성 예시
+
+from langchain_ollama import ChatOllama
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+
+llm = ChatOllama(model='llama3.2:1b')
+parser = StrOutputParser()
+food_prompt = PromptTemplate.from_template(
+    'What is the most famous food in {country}? Return the food name only.'
+)
+recipe_prompt = PromptTemplate.from_template('What is the recipe for {food}?')
+food_chain = food_prompt | llm | parser
+recipe_chain = recipe_prompt | llm | parser
+final_chain = {'food': food_chain} | recipe_chain
+result = final_chain.invoke({'country': 'Korea'})
+print(result)
+
+예제 원문은 음식명 체인과 레시피 체인을 각각 실행한다. 위 코드는 예제 과제에 맞춰 두 체인을 연결한 보완 예시이며 실행은 미검증이다.
+앞 체인의 답변에 설명 문장이 섞이면 다음 체인의 입력도 길어진다. Return the food name only 같은 지시의 목적을 이해한다.
+이 실습은 두 번의 모델 호출로 구성된다. 첫 결과의 오류가 다음 결과로 이어질 수 있다.
+
+
+필수 함수
+
+PromptTemplate.from_template() → 변수 포함 프롬프트 생성.
+StrOutputParser() → 답변 문자열 추출.
+| → 체인 연결. {'food': food_chain} → 다음 입력 키로 결과 전달.
+invoke() → 체인 실행.
+
+원문 → 생성형 AI.ipynb, ch2의 생성형 AI 평가.

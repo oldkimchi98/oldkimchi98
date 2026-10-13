@@ -1,0 +1,40 @@
+﻿9장 02  OpenAI SDK와 LangChain 호출 비교
+
+
+핵심 이해
+
+같은 제공자의 모델을 직접 SDK로 호출하는 방식과 LangChain으로 호출하는 방식을 비교한다.
+한 질문의 답이 그럴듯한지 보는 것과 전체 성능을 검증하는 것은 다르다.
+
+
+SDK 흐름
+
+load_dotenv() → OpenAI() → chat.completions.create() → choices[0].message.content.
+messages → 역할과 본문을 가진 딕셔너리 목록.
+model='gpt-4o-mini', temperature=0.5 → 원문의 설정.
+response.usage → 사용 토큰 수 등 확인. 답변 문자열 자체의 속성은 아니다.
+
+
+LangChain 흐름
+
+ChatOpenAI(model='gpt-4o-mini',temperature=0.5) → invoke(질문) → AIMessage → content.
+단순 문자열 질문 외에도 SystemMessage·HumanMessage 등 메시지 목록을 전달할 수 있다.
+프롬프트와 출력 파서를 연결해 LCEL 체인으로 확장할 수 있다.
+SDK와 LangChain은 입력 형식·응답 객체가 다르므로 content 추출 위치를 맞춘다.
+
+
+공정하게 비교하기
+
+같은 모델·질문·역할 지침·생성 설정을 맞춘다.
+원문 SDK 예제에는 system 지침이 있고 LangChain 예제는 질문 문자열만 전달한다. 이 차이가 답변에 영향을 줄 수 있다.
+temperature를 낮춰도 완전히 같은 답변을 보장하지는 않는다.
+한 번의 정답 여부만으로 안정성을 판단하지 않는다. 사실 질문·형식 요청·문서 근거 질문 등 목적에 맞는 항목을 따로 확인한다.
+외부 정보가 필요한 질문에는 실제 조회 결과를 전달했는지 확인한다.
+
+
+필수 함수
+
+load_dotenv(), OpenAI(), chat.completions.create(), ChatOpenAI(), invoke().
+SDK → choices[0].message.content. LangChain → AIMessage.content.
+
+원문 → ch9.02_ChatOpenAI와 렝체인을 활용한 검증.ipynb.

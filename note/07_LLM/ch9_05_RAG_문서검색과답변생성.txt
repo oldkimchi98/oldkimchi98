@@ -1,0 +1,75 @@
+﻿9장 05  RAG 문서 검색과 답변 생성
+
+
+핵심 이해
+
+RAG(Retrieval-Augmented Generation) → 질문과 관련된 외부 문서를 검색해 모델의 답변 근거로 전달한다.
+문서를 임베딩했다고 모델의 가중치를 다시 학습한 것은 아니다.
+원문 파일명은 vectorStore 저장 없이지만 실제로는 Chroma의 메모리 벡터 저장소를 사용한다. 디스크 영속 저장을 하지 않는 흐름이다.
+
+
+전체 흐름
+
+DOCX 읽기 → 텍스트 모으기 → 토큰 청크로 분할 → 청크 임베딩과 Chroma 저장 → 질문 임베딩 → 상위 청크 검색 → 검색 원문과 질문을 LLM에 전달 → 근거를 확인하며 답변.
+색인 단계 → 문서 준비·청크·임베딩·저장. 질의 단계 → 질문·검색·근거 전달·생성.
+
+
+문서와 토큰
+
+Docx2txtLoader.load() → LangChain Document 목록으로 읽기.
+python-docx의 Document(...).paragraphs → 문단별 객체. paragraph.text → 문단 글.
+문단만 모으면 표·각주 등 내용이 빠질 수 있다. 조항 제목과 문단 경계를 보존하면 근거 위치를 찾기 쉽다.
+예제 자료 → tax_docx의 소득세법 DOCX. 계산 규칙 학습보다 문서 검색 파이프라인의 이해에 사용한다.
+tiktoken.encoding_for_model('gpt-4o-mini') → 토크나이저 선택.
+encode() → 텍스트를 토큰 ID로. decode() → 토큰 ID를 텍스트로.
+len(text)와 len(encode(text)) → 글자 수와 토큰 수. 서로 다르다.
+
+
+청크와 저장
+
+split_text(full_text,chunk_size=1500) → 1500토큰씩 연속 분할.
+range(0,total_token_count,chunk_size) → 청크 시작 위치. 마지막 청크는 더 짧을 수 있다.
+고정 분할은 문맥·조항 경계를 끊을 수 있다. 문단·조항 단위 분할이나 겹치는 부분(overlap)을 고려한다.
+Chroma Client → 메모리 저장 방식. PersistentClient → 디스크에 남기는 별도 방식.
+OpenAIEmbeddingFunction(model_name='text-embedding-3-large',...) → 문서·질문을 같은 검색 공간으로 임베딩.
+get_or_create_collection() → 컬렉션 가져오기 또는 생성.
+add(documents=chunk_list,ids=ids) → 원문과 식별자를 저장하고 임베딩 함수로 벡터 생성.
+ids는 고유해야 한다. 같은 셀의 반복 실행으로 같은 ID를 다시 넣는 상황을 확인한다.
+메모리 저장이어도 외부 임베딩 API를 호출하면 요청·비용은 발생한다.
+
+
+검색 결과
+
+query(query_texts=[query],n_results=3) → 관련 청크 3개 검색. 목록 입력으로 질문 개수를 명시한다.
+retrieved_doc['documents'][0] → 첫 질문의 검색 원문 목록.
+검색 결과의 ids·distances도 원문과 함께 확인한다. distances의 의미는 컬렉션의 거리 설정을 따른다.
+상위 3개가 언제나 충분한 근거라는 뜻은 아니다. 질문과 무관한 청크나 필요한 조항의 누락을 확인한다.
+metadata에 조항·문단 번호를 저장하면 답변 근거를 추적하기 쉽다. 원문 코드는 이를 넣지 않는다.
+
+
+검색 근거를 실제로 전달하기
+
+원문 마지막 system 문자열에는 f 접두사가 없어 {retrieved_doc['documents'][0]}가 글자 그대로 전달된다.
+문서를 검색해 놓고도 답변 근거로 쓰지 못하는 핵심 오류다.
+아래는 검색 이후의 보완 예시이며 API 실행은 미검증이다.
+
+context = '\n\n'.join(retrieved_doc['documents'][0])
+messages = [
+    {'role': 'system', 'content': '제공된 자료를 근거로 답하고, 자료에 없으면 확인할 수 없다고 말하세요.'},
+    {'role': 'user', 'content': f'참고 자료:\n{context}\n\n질문: {query}'}
+]
+response = client.chat.completions.create(model='gpt-4o-mini', messages=messages)
+print(response.choices[0].message.content)
+
+자료는 근거 데이터로 취급한다. 자료 안의 지시문을 시스템 지침처럼 따르지 않는다.
+질문에 계산·법 적용이 포함되어도 검색 청크만으로 결론을 확정하지 않는다. 필요한 조건과 근거가 충분한지 확인한다.
+
+
+필수 함수
+
+Document(), Docx2txtLoader.load(), encode(), decode(), split_text() → 문서와 청크 준비.
+OpenAIEmbeddingFunction(), get_or_create_collection(), add(), query(), get() → 임베딩 저장과 검색.
+join(), f 문자열, chat.completions.create() → 검색 원문 연결과 답변 생성.
+
+원문 → ch9.05_vectorStore저장없이 RAG구현.ipynb.
+확인 자료 → https://docs.trychroma.com/reference/python/client

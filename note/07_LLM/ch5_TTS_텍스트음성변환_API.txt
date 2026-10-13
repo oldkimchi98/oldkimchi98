@@ -1,0 +1,45 @@
+﻿5장  TTS 텍스트 → 음성 변환
+
+
+핵심 이해
+
+TTS(Text-to-Speech) → 텍스트를 음성 데이터로 생성한다.
+model → 음성을 만드는 모델. voice → 목소리. input → 읽을 글.
+예제의 tts-1·tts-1-hd는 음성 생성 모델이며 채팅·음성 인식 모델과 구분한다.
+
+
+전체 흐름
+
+환경 변수 로드 → 텍스트 준비 → speech.create() → 응답 bytes → 파일 저장 → Audio로 재생.
+스트리밍 저장 → with_streaming_response.create() → stream_to_file() → 파일 재생.
+
+
+옵션
+
+tts-1 → 낮은 지연 중심. tts-1-hd → 더 높은 음질 중심. 실제 속도는 환경·입력에 따라 달라진다.
+voice → nova·fable·shimmer 등의 식별자. 지원 목록은 모델별로 확인하며 소문자 이름을 정확히 쓴다.
+input → 한국어를 포함한 텍스트. 언어에 따른 발음·억양을 결과로 확인한다.
+speed → 재생 발화 속도 설정. 1.0 기본, 작은 값은 느리게, 큰 값은 빠르게.
+response_format → mp3·wav 등 출력 형식. 형식과 파일 확장자를 일치시킨다.
+원문의 설명에 적힌 voice·speed보다 실제 코드에 전달한 값이 실행 기준이다.
+
+
+저장과 재생
+
+response.content → 음성 bytes. len(audio_data) → 데이터의 바이트 크기.
+len(text) → 글자 수이며 토큰 수와 같지 않다. 바이트 크기도 과금액과 같지 않다.
+with open('data/output.mp3','wb') as f: → 바이너리 저장.
+response.stream_to_file(...) → 스트리밍 응답을 파일로 저장. with_streaming_response 문맥 안에서 사용하는 형태를 따른다.
+Audio(filename, autoplay=True) → 노트북 오디오 플레이어. 브라우저가 자동 재생을 제한할 수 있다.
+기존 오디오 파일을 같은 이름으로 덮어쓰거나 삭제하는 예제는 결과 보존 여부를 먼저 확인한다.
+
+
+점검과 필수 함수
+
+reponse_ko.content → response_ko.content로 오타 수정이 필요하다.
+모델별 목소리·옵션·요금이 달라질 수 있으므로 오래된 목록·고정 단가를 기준으로 삼지 않는다.
+audio.speech.create(), audio.speech.with_streaming_response.create() → 음성 생성.
+content, stream_to_file(), Audio() → 데이터 추출·저장·재생.
+
+원문 → ch5_OpenAI_TTS_API.ipynb.
+공식 확인 → https://developers.openai.com/api/docs/guides/text-to-speech

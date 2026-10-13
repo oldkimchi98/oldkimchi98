@@ -1,0 +1,53 @@
+﻿8장  Function Calling 함수 연결
+
+
+핵심 이해
+
+Function Calling → 모델이 함수 이름과 인수를 제안하면 개발자 코드가 실행하고 결과를 모델에 돌려주는 방식.
+함수 설명을 tools에 등록했다고 모델이 내 Python 함수를 직접 실행하는 것은 아니다.
+예제 → 위도·경도를 받아 외부 날씨 API에서 현재 기온을 가져온다.
+
+
+전체 흐름
+
+외부 함수 정의 → tools 스키마 등록 → 첫 모델 요청 → tool_calls 확인 → 인수 파싱·검증 → 함수 실행 → tool 결과 메시지 추가 → 모델에 다시 요청 → 최종 답변.
+
+
+함수와 스키마
+
+get_weather(latitude,longitude) → Open-Meteo에 HTTP 요청 후 current.temperature_2m 추출.
+requests.get() → 요청. response.json() → JSON 응답을 Python 객체로 변환.
+실제 함수에서는 timeout·raise_for_status()·응답 필드 존재 여부도 확인한다.
+tools → type='function'과 function 안의 name·description·parameters 지정.
+parameters.type='object' → 인수 객체. properties → 인수별 타입. required → 필수 인수.
+additionalProperties=False → 정의하지 않은 속성 금지. strict=True → 지원되는 스키마의 형식 준수 강화.
+strict는 좌표가 실제 질문 지역인지 또는 결과가 사실인지를 보장하지 않는다. 위도·경도 범위와 의도도 검증한다.
+
+
+호출 결과 처리
+
+completion.choices[0].message.tool_calls → 호출 요청 목록. 함수가 필요 없으면 없을 수 있다.
+tool_call.function.name → 함수 이름. function.arguments → JSON 문자열.
+json.loads(arguments) → 인수 객체로 변환. 등록한 함수만 이름으로 분기해 실행한다.
+도구를 실행하기 전 assistant의 함수 호출 메시지를 messages에 추가한다.
+각 실행 결과 → role='tool', tool_call_id=해당 ID, content=문자열 결과로 추가.
+함수 호출 ID와 결과 메시지는 정확히 짝지어야 한다.
+parallel_tool_calls=False → 한 응답에서 병렬 함수 호출 제한. 호출이 반드시 발생하거나 이후 도구 요청이 끝난다는 뜻은 아니다.
+
+
+예제의 보완점
+
+tool_calls가 없는 경우에는 일반 답변을 처리한다.
+여러 호출이 있으면 각각 실행 결과를 추가한다. 반복문 밖에서 마지막 결과만 추가하지 않는다.
+다시 요청한 응답도 tool_calls를 반환할 수 있다. 최종 텍스트가 나올 때까지 제한된 반복 횟수 안에서 처리한다.
+외부 조회 실패나 누락 값은 정상 기온으로 꾸미지 말고 오류 정보로 전달한다.
+
+
+필수 함수
+
+requests.get(), response.json(), json.loads() → 데이터 요청과 변환.
+chat.completions.create(), messages.append() → 도구 요청·결과와 대화 연결.
+name·arguments·tool_call_id → 어떤 함수를 어떤 인수로 실행했는지 연결하는 핵심 필드.
+
+원문 → ch8_function_calling.ipynb.
+공식 확인 → https://developers.openai.com/api/docs/guides/function-calling

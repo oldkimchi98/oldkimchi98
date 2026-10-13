@@ -1,0 +1,16 @@
+생성 방식: 내장 image_gen 도구
+디자인 참고: Notion의 흰 배경, 검은 글자, 파란 강조색과 넉넉한 간격
+
+Use case: scientific-educational. Create a polished high-resolution Korean educational diagram, portrait canvas, matching a beginner Word study guide about embeddings, LLM calls and RAG. Three clearly separated horizontal sections with generous whitespace, black Korean sans-serif typography, white paper background, subtle gray outlines, blue accent #0075de, minimal flat line icons. Notion-inspired calm readable document layout, no brand logo. Large readable Korean text, not dense prose. Exact labels below; do not add extra labels. Straight arrows with unambiguous direction. No decorative scenes or robots.
+Title: "임베딩과 RAG 한눈에 보기"
+Subtitle: "숫자로 바꾸기 → AI에 질문하기 → 자료를 찾아 답하기"
+Section 1 heading "1 임베딩  문장의 의미 비교"
+Four boxes left to right: "문장" (small example "왕은 왕자의 아버지다"), "임베딩 모델", "숫자 벡터" (small numeric list "[0.12, -0.35, …]"), "유사도 비교". Forward arrows. Small note below: "임베딩은 의미를 비교할 숫자를 만들어요"
+Section 2 heading "2 AI 호출  답변 만들기"
+Four boxes left to right "질문", "SDK 또는 LangChain", "AI 모델", "답변". Under AI model box show three small branches listed without directional connection among them "OpenAI", "Upstage", "Ollama". Small note below "SDK와 LangChain은 AI에 연결하는 도구예요". Do not imply chain of providers.
+Section 3 heading "3 RAG  관련 자료를 찾아 함께 보내기"
+Two clearly labeled lanes. Upper lane label "자료 준비", four boxes left to right "Word 문서", "청크로 나누기" (tiny subtitle "1500토큰씩"), "임베딩", "Chroma" (tiny subtitle "원문 + 벡터"). Forward arrows.
+Lower lane label "질문 처리", four boxes left to right "질문", "질문 임베딩", "관련 청크 검색" (subtitle "상위 3개"), "원문 + 질문". Forward arrows. Connect upper Chroma box to lower related-chunk search box by a thin arrow routed in whitespace and label "검색". Then from last lower box arrow down to two centered boxes "LLM" → "답변". This is the crucial information flow: retrieved original text AND question go into LLM. A bottom bold simple sentence "검색한 원문이 LLM에 전달되어야 RAG가 돼요". Footer tiny note "이 실습의 Chroma는 메모리에 보관해요". All labels exactly in Korean, orthographically accurate. Keep RAG section taller so everything is comfortably readable. Avoid math plots, fake percentages, giant paragraphs, shadows, gradients, overlap, crossings or clipped text.
+
+최종 수정: 마지막 RAG 연결을 원문 + 질문 → LLM → 답변 순서로 수정. 다른 글자와 배치는 유지.
+

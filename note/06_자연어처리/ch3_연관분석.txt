@@ -5,7 +5,7 @@
 
 연관분석 → 거래나 문서에서 항목들이 함께 등장하는 규칙을 찾는다.
 X → Y → X가 있는 거래에서 Y도 나타나는 경향. 인과관계나 발생 순서를 뜻하지 않는다.
-수업 자료 → cf_basket.csv의 장바구니 거래와 경제뉴스 20개의 명사 목록.
+분석 자료 → cf_basket.csv의 장바구니 거래와 경제뉴스 20개의 명사 목록.
 
 
 전체 흐름
@@ -27,7 +27,7 @@ X→Y와 Y→X의 신뢰도는 달라질 수 있다. 향상도가 커도 거래 
 규칙 생성과 뉴스 실습
 
 apriori() → min_support, min_confidence, min_lift 이상인 규칙 추출. 반환 결과는 list()로 모아 확인한다.
-수업 장바구니 기준 → min_support=0.15, min_confidence=0.1, min_lift=1.001.
+예제 장바구니 기준 → min_support=0.15, min_confidence=0.1, min_lift=1.001.
 items → 함께 나타난 항목 집합. ordered_statistics → 방향별 조건, 결과, 신뢰도, 향상도.
 item_base → lhs 조건. item_add → rhs 결과. 같은 항목 집합에서도 여러 방향의 규칙이 나온다.
 뉴스 전처리 → 제목과 요약 합치기 → NNG·NNP 선택 → 기사·기자 불용어 제거 → 2글자 이상 명사 선택.

@@ -17,7 +17,7 @@
 수집과 정제
 
 query → 경주 여행 또는 전주 여행. display → 한 번에 받을 결과 수. start → 검색 결과의 시작 위치.
-수업의 display=100 기준 → start를 1, 101, 201, 301, 401로 이동해 겹치지 않게 요청한다.
+예제의 display=100 기준 → start를 1, 101, 201, 301, 401로 이동해 겹치지 않게 요청한다.
 문서 번호 → start+i처럼 실제 검색 위치와 연결한다. start를 페이지 번호와 혼동하지 않는다.
 제목·요약 → <b> 태그 제거 → unescape()로 HTML 문자 복원 → re.sub()로 불필요한 문자 정리.
 문자 제거 시 공백으로 바꾸면 앞뒤 단어가 붙는 것을 줄일 수 있다. total_text → 제목 + 공백 + 요약.
@@ -29,7 +29,7 @@ quiz_naver.csv → query, no, title, link, description, total_text.
 quiz_naver_pos.csv → query, no, token, pos로 원문별 품사 결과 저장.
 quiz_naver_pos_noun.csv → 명사에 해당하는 토큰 선택.
 quiz_naver_nouns_count.csv → token, 경주빈도, 전주빈도, 빈도합과 도시별 비율.
-수업 CSV는 cp949로 저장한다. 읽을 때도 같은 인코딩을 지정하고 index=False로 불필요한 인덱스를 제외한다.
+예제 CSV는 cp949로 저장한다. 읽을 때도 같은 인코딩을 지정하고 index=False로 불필요한 인덱스를 제외한다.
 
 
 빈도와 유사도
@@ -38,7 +38,7 @@ groupby(['query', 'token']) → 도시별 단어 출현 횟수. 도시별 표를
 빈도합 → 경주빈도 + 전주빈도. 경주비율 → 경주빈도 / 해당 단어의 빈도합 × 100.
 이 비율은 해당 단어가 어느 도시 쪽에 많이 나오는지 나타낸다. 도시 전체 단어 중 점유율과 구분한다.
 WordCloud와 Text.plot() → 도시별 핵심 단어 비교. 같은 불용어·표시 기준을 적용한다.
-Word2Vec → 문서별 명사 목록으로 학습. 수업은 window=15, min_count=20, workers=1, sg=1.
+Word2Vec → 문서별 명사 목록으로 학습. 예제에서는 window=15, min_count=20, workers=1, sg=1.
 유사도 분석 → 학습된 어휘인지 확인한 뒤 most_similar()로 비교. 연관분석은 함께 등장하는 단어 규칙을 찾는 별도 분석이다.
 
 

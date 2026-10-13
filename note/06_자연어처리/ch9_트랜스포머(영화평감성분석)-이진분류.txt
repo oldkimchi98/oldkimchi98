@@ -5,13 +5,13 @@
 
 목표 → 트랜스포머 인코더로 IMDB 영화평을 부정·긍정으로 분류한다.
 Self Attention → 같은 영화평 안에서 각 토큰이 다른 토큰을 참고해 문맥 정보를 만든다.
-위치 임베딩 → 토큰의 순서를 알려주는 학습 가능한 벡터. 수업은 단어 임베딩에 위치 임베딩을 더한다.
+위치 임베딩 → 토큰의 순서를 알려주는 학습 가능한 벡터. 예제에서는 단어 임베딩에 위치 임베딩을 더한다.
 
 
 전체 흐름
 
 IMDB 데이터 확인 → 길이 80으로 통일 → 단어·위치 임베딩 → Multi-Head Attention → 잔차 연결과 LayerNormalization → FFN → 잔차 연결과 정규화 → 평균 풀링 → Dense·sigmoid → 학습과 평가.
-수업 설정 → 어휘 10000, 임베딩 32, hidden 64, attention heads=3, key_dim=32//3.
+예제 설정 → 어휘 10000, 임베딩 32, hidden 64, attention heads=3, key_dim=32//3.
 
 
 인코더 구조
@@ -21,7 +21,7 @@ Embedding(10000, 32) → 단어 벡터. Embedding(80, 32) → 위치별 벡터.
 MultiHeadAttention(X, X) → 동일한 시퀀스를 query와 value로 사용해 여러 관점의 문맥 관계 계산.
 잔차 연결(add) → 블록 입력을 출력에 더해 정보 전달을 돕는다. 더하는 배열의 차원이 맞아야 한다.
 LayerNormalization → 특징 차원을 기준으로 정규화. 배치 정규화와 구분한다.
-FFN → 각 토큰에 같은 Dense 네트워크 적용. 수업은 64차원으로 확장한 뒤 32차원으로 돌린다.
+FFN → 각 토큰에 같은 Dense 네트워크 적용. 예제에서는 64차원으로 확장한 뒤 32차원으로 돌린다.
 GlobalAvgPool1D → 토큰 축을 평균 내 영화평 전체를 하나의 벡터로 요약.
 
 
@@ -30,7 +30,7 @@ GlobalAvgPool1D → 토큰 축을 평균 내 영화평 전체를 하나의 벡�
 Dense(1, sigmoid) → 긍정 확률 하나. 타겟 → 정수 0/1. 손실 → binary_crossentropy.
 Dropout과 l2 → 과적합 제어. EarlyStopping → val_loss, patience=3, restore_best_weights=True.
 validation_split=0.2 → 학습 데이터 일부로 검증. 시험셋은 최종 평가에 사용한다.
-패딩 0과 실제 단어를 구분하는 마스크도 모델 설계에서 고려한다. 수업 코드는 명시적인 Attention 패딩 마스크를 전달하지 않는다.
+패딩 0과 실제 단어를 구분하는 마스크도 모델 설계에서 고려한다. 예제 코드는 명시적인 Attention 패딩 마스크를 전달하지 않는다.
 
 
 평가와 새 리뷰

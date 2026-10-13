@@ -4,7 +4,7 @@
 핵심 이해
 
 목표 → 같은 부정·긍정 문제를 두 개의 softmax 출력으로 표현한다.
-파일 이름은 다중분류지만 수업 데이터의 실제 클래스는 부정 0, 긍정 1의 두 가지다. 인코더 구조는 이진분류 노트와 같다.
+파일 이름은 다중분류지만 예제 데이터의 실제 클래스는 부정 0, 긍정 1의 두 가지다. 인코더 구조는 이진분류 노트와 같다.
 sigmoid → 긍정 확률 하나. softmax → 부정과 긍정 확률을 각각 출력하며 합이 1이 된다.
 
 
@@ -16,7 +16,7 @@ IMDB 데이터와 정수 타겟 확인 → 패딩 → 단어·위치 임베딩 �
 
 출력과 손실함수
 
-수업 구성 → Dense(2, softmax), 타겟은 원핫 인코딩하지 않은 정수 0/1, sparse_categorical_crossentropy.
+예제 구성 → Dense(2, softmax), 타겟은 원핫 인코딩하지 않은 정수 0/1, sparse_categorical_crossentropy.
 원핫 타겟 [1, 0] 또는 [0, 1]을 사용할 경우 → categorical_crossentropy.
 Dense(1, sigmoid)와 0/1 타겟을 사용할 경우 → binary_crossentropy.
 출력 형태·타겟 표현·손실함수는 한 세트로 맞춘다. softmax라고 타겟을 반드시 원핫 인코딩해야 하는 것은 아니다.
@@ -27,7 +27,7 @@ Dense(1, sigmoid)와 0/1 타겟을 사용할 경우 → binary_crossentropy.
 예측 결과 → (리뷰 수, 2) 배열. 열 0은 부정 확률, 열 1은 긍정 확률.
 pred.argmax(axis=-1) → 확률이 가장 큰 열의 번호를 최종 클래스 0/1로 선택.
 각 확률을 따로 0.5와 비교하기보다 argmax로 하나의 클래스를 선택한다.
-수업 파일의 새 리뷰 예측 부분에 남은 sigmoid용 0.5 비교는 softmax 출력에 맞게 argmax로 읽는다.
+예제 파일의 새 리뷰 예측 부분에 남은 sigmoid용 0.5 비교는 softmax 출력에 맞게 argmax로 읽는다.
 confusion_matrix()와 crosstab() → 실제·예측 비교. precision_score(), recall_score(), f1_score() → 긍정 클래스 중심 평가.
 클래스가 세 개 이상으로 늘어나면 출력 수와 타겟 번호 범위를 맞추고 지표의 평균 방식도 지정한다.
 

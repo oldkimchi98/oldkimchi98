@@ -1,0 +1,60 @@
+﻿6장  Whisper 음성 → 텍스트 변환
+
+
+핵심 이해
+
+ASR(Automatic Speech Recognition) → 음성을 글로 인식한다.
+Transcription → 말한 언어 그대로 필사. Translation → 다른 언어로 번역.
+whisper-1의 translations 엔드포인트 → 영어 텍스트로 번역한다. 한국어 번역은 필사 후 텍스트 번역을 연결할 수 있다.
+
+
+전체 흐름
+
+음성 파일 열기 → transcriptions.create() → 텍스트·자막·상세 결과 → 저장 또는 후속 처리.
+with open(...,'rb') → 요청이 끝난 뒤 파일을 자동으로 닫는다.
+language='ko'·'es' → 입력 음성의 언어 지정. 원하는 번역 결과 언어를 지정하는 옵션이 아니다.
+
+
+응답 형식
+
+기본 JSON 응답 객체 → transcript.text로 본문 추출.
+response_format='text' → 문자열 반환. .text를 다시 붙이지 않는다.
+srt·vtt → 시간 코드가 포함된 자막 문자열.
+verbose_json → 상세 결과 객체. segments의 각 구간에서 start·end·text 확인.
+단어 타임스탬프가 필요하면 지원 모델·형식과 timestamp_granularities를 확인한다.
+인식 결과를 모두 확정된 사실로 보지 않는다. 소음·동음이의어·전문용어의 오류를 점검한다.
+
+
+번역과 코드 점검
+
+스페인어 음성 → transcriptions.create() → 스페인어 글.
+스페인어 음성 → translations.create(model='whisper-1') → 영어 글.
+스페인어 글 → 채팅 모델에 번역 요청 → 한국어 글.
+원문의 영어 번역 제목 아래 transcriptions 호출은 영어 번역을 수행하지 않는다.
+translation.choices[0].messages.content → message.content가 올바른 접근이다.
+
+
+마이크 입력
+
+sf=16000 → 1초에 16000개 샘플. seconds=5 → 5초. channels=1 → 모노.
+sd.rec() → 녹음 시작. sd.wait() → 완료까지 대기. scipy.io.wavfile.write() → WAV 저장.
+녹음 종료 후 파일을 전송하는 흐름은 짧은 구간의 순차 처리다. 동시에 흘러오는 음성의 실시간 스트리밍과 구분한다.
+파일 업로드 제한은 공식 문서에서 확인한다. 확인 시점의 제한은 25MB이며 긴 파일은 압축·분할을 고려한다.
+
+
+요약 → 음성 실습
+
+data/ch06_quiz.txt 읽기 → 줄바꿈 정리 → 채팅 모델로 짧게 요약 → nova 음성 생성 → data/ch06_quiz.mp3 저장.
+원문의 전체 요구는 100자, 세부 설명·코드는 70자 조건으로 서로 다르다. 목표 길이를 먼저 정한다.
+프롬프트의 글자 수 지시는 보장되지 않으므로 len(summary)로 확인하고 필요하면 다시 요약한다.
+현재 폴더에는 ch06_quiz.mp3가 아니라 ch06_quiz.mp3와 유사한 별도 파일명도 등장하므로 저장·재생 경로를 맞춘다.
+
+
+필수 함수
+
+transcriptions.create(), translations.create(), Audio() → 필사·영어 번역·재생.
+sd.rec(), sd.wait(), write() → 녹음과 저장.
+read(), replace(), chat.completions.create(), speech.create() → 글 읽기·요약·음성 연결.
+
+원문 → ch6_OpenAI_Whisper_API.ipynb, data/ch06_quiz.txt.
+공식 확인 → https://developers.openai.com/api/docs/guides/speech-to-text

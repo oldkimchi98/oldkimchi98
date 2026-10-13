@@ -93,6 +93,14 @@ pip install plotly
 pip install dataprep
 
 
+# RAG
+
+(0.7.7) LangChain과 Upstage를 연결하는 패키지
+pip install langchain-upstage
+
+(0.4.2) python-docx / (0.9) docx2txt / (1.2.0) python-docx
+pip install -U -q langchain-community docx2txt python-docx
+
 
 
 

@@ -1,0 +1,51 @@
+﻿2장  한글 형태소 분석과 시각화
+
+
+핵심 이해
+
+형태소 → 의미를 가진 가장 작은 단위. 한글은 조사와 어미가 붙으므로 형태소 분석으로 분석 대상을 나눈다.
+품사태깅 → 나눈 단위에 품사를 붙인다. 같은 문장도 분석기와 태그 체계에 따라 결과가 달라진다.
+빈도 분석 → 자주 나오는 단어 확인. 워드 임베딩 → 문맥을 이용해 단어를 벡터로 표현하고 유사도를 비교.
+
+
+전체 흐름
+
+원문 수집 → 형태소와 품사 분석 → 명사 선택 → 불용어 제거 → 빈도 계산 → 워드클라우드와 등장 위치 확인 → Word2Vec 학습과 유사도 분석.
+수업 자료 → 영어 Emma 말뭉치, 한국어 헌법 말뭉치, 네이버 경제뉴스의 제목과 요약.
+
+
+한글 분석기
+
+Hannanum → morphs(), nouns(), pos(), analyze()로 분석. 수업은 ntags=22에서 NC 등의 명사를 선택한다.
+Kkma와 Komoran → NNG 일반명사, NNP 고유명사 등을 선택한다.
+Okt → Noun 태그로 명사를 선택. phrases()로 명사구도 추출한다.
+MeCab → 수업에서는 from mecab import MeCab로 사용. NNG, NNP 등의 태그를 선택한다.
+morphs() → 형태소 목록. nouns() → 명사 목록. pos() → (형태소, 품사) 목록.
+분석기의 태그 이름이 다르므로 다른 분석기의 필터를 그대로 적용하지 않는다.
+
+
+워드클라우드
+
+WordCloud → 단어 빈도를 글자 크기로 표현한다. 한글은 한글을 지원하는 font_path를 설정한다.
+' '.join(noun_list) → 명사를 공백으로 연결한 텍스트. generate() → 텍스트로 워드클라우드 생성.
+stopwords → 제외할 단어 집합. 뉴스의 기사·기자처럼 목적에 불필요한 단어는 분석 전에도 제거한다.
+mask → 이미지 배열로 단어 배치 영역 지정. 흰색 영역은 배치에서 제외된다.
+max_words → 표시할 단어 수. colormap → 색상. contour_width와 contour_color → 외곽선.
+to_file() → 이미지 저장. Text.plot() → 최빈 단어, dispersion_plot() → 등장 위치 확인.
+
+
+Word2Vec
+
+입력 → 기사별 명사 목록을 묶은 2차원 리스트. 기사 경계를 유지해 문맥을 구성한다.
+window → 주변 문맥 범위. min_count → 학습에 포함할 최소 출현 횟수.
+sg=1 → Skip-gram. sg=0 → CBOW. workers → 학습 작업 스레드 수로 양의 정수를 지정한다.
+model.wv.index_to_key → 학습된 단어 목록. model.wv.most_similar() → 벡터 유사도가 높은 단어.
+단어가 model.wv에 있는지 확인한 뒤 조회한다. 적은 기사로 학습한 유사도는 수집한 문맥에 크게 영향을 받는다.
+
+
+필수 함수
+
+kolaw.open().read() → 헌법 말뭉치 읽기. FreqDist()와 Series.sort_values() → 빈도 정렬.
+load_dotenv()와 os.getenv() → API 인증 정보를 환경변수에서 읽기.
+requests.get()과 response.json() → 검색 결과 요청과 해석. 제목·요약의 HTML 표시를 정리한 뒤 분석한다.
+Word2Vec() → 단어 벡터 학습. most_similar() → 비슷한 문맥의 단어 확인.

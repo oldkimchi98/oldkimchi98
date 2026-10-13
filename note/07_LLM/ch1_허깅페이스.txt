@@ -1,0 +1,66 @@
+﻿1장  Hugging Face 모델 활용
+
+
+핵심 이해
+
+Hugging Face → 사전 학습 모델과 데이터셋을 공유하고 활용하는 플랫폼.
+pipeline() → 입력 전처리·토큰화·모델 추론·결과 후처리를 묶는 인터페이스.
+로컬 pipeline → 모델을 다운로드해 내 컴퓨터에서 실행. InferenceClient → 제공자의 서버에서 추론.
+task → 하려는 작업. model → 그 작업을 수행할 학습된 모델. 언어와 학습 목적도 함께 맞춘다.
+
+
+전체 흐름
+
+작업 선택 → 모델과 언어 확인 → pipeline 생성 → 문자열·리스트·이미지 입력 → 결과의 필드 확인.
+첫 사용에는 모델 다운로드가 필요하다. 캐시가 있으면 재사용한다.
+
+
+텍스트 작업
+
+text-classification·sentiment-analysis → 문장 분류. label은 모델별 라벨, score는 해당 예측 점수다.
+영어 감성 모델 → distilbert/...sst-2-english. 한국어 감성 모델 → daekeun-ml/koelectra-small-v3-nsmc.
+라벨 0·1·LABEL_0·LABEL_1의 의미는 모델 설정으로 확인한다. 모든 모델에서 1이 긍정이라는 규칙은 없다.
+zero-shot-classification → 별도 작업용 추가 학습 없이 candidate_labels 중 관련 라벨을 고른다. 사전 학습 자체가 없다는 뜻은 아니다.
+text-generation → 입력 뒤에 이어질 문장을 생성한다. GPT-2·KoGPT2를 사용하며 대화 지시 모델과는 목적이 다를 수 있다.
+fill-mask → 문장의 가려진 토큰을 예측한다. RoBERTa 계열의 <mask>와 BERT의 [MASK]를 구분한다.
+ner → 사람·기관·장소 등의 개체명 인식. 토큰별 결과를 묶어 개체 단위로 읽는다.
+question-answering → 주어진 context에서 질문의 답을 찾는다. 일반 상식 챗봇과 구분한다.
+summarization → 긴 내용을 요약. translation → 지정된 언어 방향으로 번역.
+
+
+생성 옵션
+
+max_new_tokens → 입력 길이와 별도로 새로 생성할 최대 토큰 수.
+do_sample=True → 다음 토큰을 확률적으로 뽑는다.
+temperature → 샘플링 분포를 조절. top_k → 후보 수 제한. top_p → 누적 확률 기준 후보 제한.
+repetition_penalty → 반복에 대한 보정. pad_token_id → 패딩 토큰 설정.
+옵션을 높이면 사실 정확도가 자동으로 높아지는 것은 아니다.
+
+
+이미지와 서버 추론
+
+image-to-text → 이미지의 설명 문장 생성. image-classification → 이미지의 대상 분류.
+PIL.Image.open() → 이미지 읽기. resize() → 새 크기의 이미지 반환.
+InferenceClient.fill_mask() → 서버 추론으로 마스크 채우기. 로컬 pipeline과 결과 객체 형태가 다를 수 있다.
+API 결과는 객체 속성, pipeline 결과는 딕셔너리 키로 접근하는 경우가 있으므로 type과 결과를 먼저 확인한다.
+
+
+모델 크기와 주의점
+
+sum(p.numel() for p in model.parameters()) → 파라미터 개수.
+가중치 메모리의 근사값 → 파라미터 수 × 파라미터당 바이트. float32라면 4바이트다.
+GPT-2의 124,439,808개 파라미터 → float32 가중치 약 474.70 MiB. 예제의 개수/1024² 출력은 용량 계산이 아니다.
+학습 메모리에는 기울기·옵티마이저·중간 활성값도 필요하다. 고정 배수로 단정하지 않는다.
+opus-mt-tc-big-ko-en은 한→영 모델이다. 예제의 영→한 주석과 모델명이 서로 맞지 않는다.
+구버전 pipeline task를 최신 Transformers에서도 그대로 쓸 수 있다고 가정하지 않는다.
+
+
+필수 함수
+
+pipeline(), AutoModel.from_pretrained(), numel() → 모델 사용과 파라미터 확인.
+InferenceClient(), fill_mask() → 서버 추론.
+Image.open(), resize(), requests.get() → 이미지 입력 준비.
+
+원문 → ch1_허깅페이스.ipynb.
+확인 자료 → https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-ko-en
+버전 확인 → https://github.com/huggingface/transformers/blob/main/MIGRATION_GUIDE_V5.md

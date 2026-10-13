@@ -1,0 +1,41 @@
+﻿4장  RNN 순환신경망
+
+
+핵심 이해
+
+RNN → 이전 시점의 은닉상태를 다음 시점에 전달해 순서와 문맥을 처리하는 신경망.
+수업 목표 → 앞의 단어들로 다음 단어를 예측한다. 경마장·말·법 등의 짧은 문장을 학습한다.
+Embedding → 단어 번호를 학습 가능한 밀집 벡터로 변환. 단어 번호 자체의 크기가 의미의 크기는 아니다.
+
+
+전체 흐름
+
+Tokenizer로 어휘 사전 생성 → 문장을 정수 시퀀스로 변환 → 연속 부분문장 생성 → 길이 맞추기 → 앞부분 X와 마지막 단어 y 분리 → y 원핫 인코딩 → Embedding·SimpleRNN·Dense 학습 → 다음 단어 예측.
+예 → '경마장에 있는 말이'에서 입력은 '경마장에 있는', 타겟은 '말이'.
+
+
+입력과 모델 구조
+
+Tokenizer.fit_on_texts() → 단어 사전 학습. word_index → 단어와 번호 대응.
+texts_to_sequences() → 문자열 목록을 정수 시퀀스로 변환. 사전에 없는 단어의 처리 방식도 확인한다.
+pad_sequences(padding='pre') → 짧은 시퀀스의 앞을 0으로 채움.
+X = padded_sequences[:, :-1] → 마지막 단어를 제외한 문맥. y = padded_sequences[:, -1] → 다음 단어.
+vocab_size+1 → 단어 번호 외에 0번 패딩을 포함할 크기.
+모델 → Embedding(output_dim=10) → SimpleRNN(10) → Dense(vocab_size+1, softmax).
+출력 → 어휘별 확률. 원핫 타겟에 categorical_crossentropy를 사용한다.
+
+
+문장 생성
+
+입력 문맥을 정수화 → 학습 때와 같은 길이로 패딩 → predict() → argmax() → 단어 번호를 단어로 복원.
+여러 단어 생성 → 예측 단어를 현재 문장에 붙이고, 갱신된 문장을 다음 입력으로 사용한다.
+수업의 생성 함수에 고정 문자열이 들어간 부분은 current_word를 변환해야 문맥이 계속 반영된다.
+'경마장에'와 '경매장에'는 서로 다른 단어이므로 오타로 미등록 단어가 되지 않게 확인한다.
+작은 학습 문장의 학습 정확도만으로 새로운 문장에 대한 성능을 판단하지 않는다.
+
+
+필수 함수
+
+Tokenizer() → 어휘 구성. texts_to_sequences() → 정수화. pad_sequences() → 길이 통일.
+to_categorical() → 타겟 원핫 인코딩. Embedding()과 SimpleRNN() → 문맥 모델 구성.
+fit() → 학습. predict().argmax() → 다음 단어 선택.

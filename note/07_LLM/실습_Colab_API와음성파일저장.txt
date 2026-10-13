@@ -1,0 +1,32 @@
+﻿Colab  API 호출과 음성 파일 저장
+
+
+핵심 이해와 흐름
+
+Colab 비밀 값 읽기 → OpenAI 클라이언트 생성 → TTS 요청 → 음성 bytes → Drive 경로 저장 → Audio로 재생.
+비밀 값은 코드나 결과 화면에 출력하지 않는다. 앞부분을 자르는 확인 코드도 노트에는 넣지 않는다.
+
+
+환경과 경로
+
+google.colab.userdata.get('OPENAI_API_KEY') → Colab에서 허용된 비밀 값 읽기.
+OpenAI(api_key=...) → 읽은 값을 클라이언트에 전달. 로컬 .env 방식과 실행 환경을 구분한다.
+/content/drive/MyDrive/... → Colab에 연결된 Google Drive 경로.
+저장 전에 Drive 연결과 대상 폴더를 확인한다. 원문에는 Drive를 연결하는 단계가 없다.
+Windows의 C:\ai\... 경로를 Colab에서 그대로 사용할 수는 없다.
+
+
+응답과 저장
+
+audio.speech.create(model='tts-1',voice='nova',input=...) → 음성 생성.
+response.content → bytes. len(audio_data) → 바이트 크기.
+open(...,'wb')와 write() → 바이너리 파일 저장.
+Audio(filename,autoplay=True) → 저장한 음성 재생.
+이 예제는 생성·저장·재생 흐름을 보여주며 실제 API와 Drive 연결은 이번 작업에서 실행하지 않았다.
+
+
+필수 함수
+
+userdata.get(), OpenAI(), audio.speech.create(), open(), write(), Audio().
+
+원문 → OpenAI_API(코랩실습용).ipynb.
